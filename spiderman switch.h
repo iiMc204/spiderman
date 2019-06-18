@@ -1,14 +1,14 @@
 #include <SoftwareSerial.h>
 #include <Servo.h>
 
-int righteyepin = 5;
+int righteyepin = 5; //pin for the servo signal
 int lefteyepin = 4;
 Servo righteye;
 Servo lefteye;
-SoftwareSerial BTSerial (12,11); //RX||TX
+SoftwareSerial BTSerial (12,11); //RX||TX Serial communication pins for the bluetooth module
 
-int Button = 2;
-int RightPower = 10;
+int Button = 2; //pin for the side button of the mask for non-bluetooth control
+int RightPower = 10; //pin for the base of the transistor
 int LeftPower = 7;
 int state = HIGH;
 int reading;
@@ -20,6 +20,7 @@ long debounce = 200;
 int value;
 byte valueall[28];
 char valuechar[28];
+
 void setup() {
 
 Serial.begin(9600);
@@ -35,36 +36,37 @@ lefteyeopen();
 }
 
 void loop() {
-if (BTSerial.available()) {
-value = BTSerial.parseInt();
+if (BTSerial.available()) { //wait for bluetooth commands
+value = BTSerial.parseInt(); 
 Serial.print (value);
     }
+	
 switch (value) {
-  case 1:
-      digitalWrite(RightPower, HIGH);  
+  case 1: //if value received from the bluetooth is 1, do this
+      digitalWrite(RightPower, HIGH);  //right eye closed
       righteye.write(120);
       delay (1000);
       digitalWrite(RightPower, LOW); 
     break;
-  case 2:
+  case 2: //right eye open
       digitalWrite(RightPower, HIGH);  
       righteye.write(30);
       delay (1000);
       digitalWrite(RightPower, LOW); 
     break;
-  case 3:
+  case 3: //left closed
       digitalWrite(LeftPower, HIGH);  
       lefteye.write(70);
       delay (1000);
       digitalWrite(LeftPower, LOW);  
     break;	
-  case 4:
+  case 4: //left open
       digitalWrite(LeftPower, HIGH);  
       lefteye.write(180);
       delay (1000);
       digitalWrite(LeftPower, LOW);   
     break;	
-  case 5:
+  case 5: //both eyes open
       digitalWrite(LeftPower, HIGH);  
       digitalWrite(RightPower, HIGH);  
       lefteye.write(180);
@@ -73,7 +75,7 @@ switch (value) {
       digitalWrite(LeftPower, LOW); 
       digitalWrite(RightPower, LOW);  
     break;
-  case 6:
+  case 6: //both eyes closed
       digitalWrite(LeftPower, HIGH);  
       digitalWrite(RightPower, HIGH);  
       lefteye.write(70);
@@ -82,7 +84,7 @@ switch (value) {
       digitalWrite(LeftPower, LOW); 
       digitalWrite(RightPower, LOW); 
     break;
-  case 7:
+  case 7: //animation mode
 botheyeopen();
 delay (200);
 lefteyeclosed();
@@ -103,12 +105,12 @@ lefteyeclosed();
 delay (100);
 botheyeopen();    
     break;
-  case 8:
+  case 8: //surprised
 botheyeclosed();
 delay (4000);
 botheyeopen();   
     break;
-  case 9:
+  case 9: //glitch mode
 digitalWrite(RightPower, HIGH);
 righteye.write(120);
 delay (glitch);
@@ -124,7 +126,7 @@ righteye.write(30);
 delay (glitch); 
 digitalWrite(RightPower, LOW);   
     break;
-  case 10:
+  case 10: //glitch both eyes
 digitalWrite(RightPower, HIGH);
 digitalWrite(LeftPower, HIGH);
 righteye.write(120);
@@ -150,14 +152,14 @@ digitalWrite(LeftPower, LOW);
     break;
 }
 
-sideButton();
+sideButton(); //button for the side of the mask
 }
 
 void sideButton(){
    reading = digitalRead(Button);
 
   if (reading == HIGH && previous == LOW && millis() - time > debounce) {
-    if (state == HIGH) {
+    if (state == HIGH) { //first press opens the eyes
       state = LOW; 
       digitalWrite(RightPower, HIGH);
       digitalWrite(LeftPower, HIGH);
@@ -168,7 +170,7 @@ void sideButton(){
       digitalWrite(LeftPower, LOW);
     }
     else {
-      state = HIGH;
+      state = HIGH; //second press closes the eyes
       digitalWrite(RightPower, HIGH);
       digitalWrite(LeftPower, HIGH);
       righteye.write(30);
@@ -184,7 +186,7 @@ void sideButton(){
  
 }
 
-void lefteyeopen(){
+void lefteyeopen(){ //left eye open - turns on the servo power, sets the position of the servo, and then turns of the power.
 digitalWrite(LeftPower, HIGH);
 lefteye.write(180);  
 delay (300);
